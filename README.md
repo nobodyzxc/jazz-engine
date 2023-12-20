@@ -40,17 +40,17 @@ The `interval/3` predicate is defined as:
 interval(First, Second, Semitones) :- ...
 ```
 
-It uses a lookup table of all notes (in sharpified form) to compute the distance between the indices of the given notes. 
+It uses a lookup table of all notes (in sharpified form) to compute the distance between the indices of the given notes.
 
-Interval names are available using the `interval_name/2` predicate. 
+Interval names are available using the `interval_name/2` predicate.
 
 **Example: Using `interval/3` to find the distance between notes**
 
 Query:
 ```
-?- mk_note(c, natural, 4, C4), 
-   mk_note(e, flat, 4, E_flat), 
-   interval(C4, E_flat, Semitones), 
+?- mk_note(c, natural, 4, C4),
+   mk_note(e, flat, 4, E_flat),
+   interval(C4, E_flat, Semitones),
    interval_name(Semitones, IntervalName).
 ```
 Output:
@@ -76,14 +76,14 @@ SecondNote = note{accidental:sharp, name:d, octave:4}.
 
 ### Scales
 
-There are two important concepts in scales. 
+There are two important concepts in scales.
 
 A *pattern* is the set of intervals that makes up the scale.
 For example, a major scale has the pattern "whole, whole, half, whole, whole, whole, half",
 or-- expressed as semitones above the tonic, `[0, 2, 4, 5, 7, 9, 11]`.
 This pattern is available as `major_scale_pattern/1`. There is also `minor_scale_pattern/1`.
 
-A *scale degree* is an array index into a scale. The Nth scale degree in a given key is the Nth note of that scale. 
+A *scale degree* is an array index into a scale. The Nth scale degree in a given key is the Nth note of that scale.
 The `scale_degree/4` predicate works like this:
 
 ```prolog
@@ -115,15 +115,15 @@ Query:
 
 Output (manually formatted for readability; `pretty_print` result is the first line):
 ```
-d_natural_4 e_natural_4 f_sharp_4 g_natural_4 a_natural_5 b_natural_5 c_sharp_5 
+d_natural_4 e_natural_4 f_sharp_4 g_natural_4 a_natural_5 b_natural_5 c_sharp_5
 Tonic = note{accidental:natural, name:d, octave:4},
 Notes = [
-   note{accidental:natural, name:d, octave:4}, 
-   note{accidental:natural, name:e, octave:4}, 
-   note{accidental:sharp, name:f, octave:4}, 
-   note{accidental:natural, name:g, octave:4}, 
-   note{accidental:natural, name:a, octave:5}, 
-   note{accidental:natural, name:b, octave:5}, 
+   note{accidental:natural, name:d, octave:4},
+   note{accidental:natural, name:e, octave:4},
+   note{accidental:sharp, name:f, octave:4},
+   note{accidental:natural, name:g, octave:4},
+   note{accidental:natural, name:a, octave:5},
+   note{accidental:natural, name:b, octave:5},
    note{accidental:sharp, name:c, octave:5}
 ].
 ```
@@ -138,12 +138,12 @@ The `chord` record type is defined as:
 
 `degrees` represents a list of scale degrees making up the chord, *starting from the givn `root` note of the chord as `1`*.
 
-The `pattern` and `adjustments` arguments can be combined in flexible ways to produce different chords. 
+The `pattern` and `adjustments` arguments can be combined in flexible ways to produce different chords.
 The scale `degrees` making up the chord will be mapped onto the provided `pattern`,
-so using a minor pattern with no `adjustments` will yield a minor chord. 
-The `adjustments` are applied after this, and can be used to reference tones outside the key. 
+so using a minor pattern with no `adjustments` will yield a minor chord.
+The `adjustments` are applied after this, and can be used to reference tones outside the key.
 For example, to represent a diminished chord, we would request scale degrees `[1, 3, 5]`, a minor pattern,
-and the adjustments `[natural, natural, flat]`. This will yield a tonic (1), a minor third (m3) from the pattern, 
+and the adjustments `[natural, natural, flat]`. This will yield a tonic (1), a minor third (m3) from the pattern,
 and a diminished fifth (b5) from the `flat` adjustment applied on the top note.
 
 This is a very flexible system, for example it is possible to create a minor chord at least two ways:
@@ -172,22 +172,21 @@ The `chord_notes/2` primitive converts between a chord and a set of notes.
 
 Query:
 ```
-?- mk_note(c, Root), major_chord(C, Chord), chord_notes(Chord, Notes), pretty_print(Notes).
+?- mk_note(c, Root), major_chord(Root, Chord), chord_notes(Chord, Notes), pretty_print(Notes).
 ```
 
 Output (manually formatted for readability) -- the `pretty_print` is the first line:
 ```
-c_natural_4 e_natural_4 g_natural_4 
+c_natural_4 e_natural_4 g_natural_4
 Root = note{accidental:natural, name:c, octave:4},
-Chord = chord{adjustments:[natural, natural, natural], 
-              degrees:[1, 3, 5], 
-              pattern:[0, 2, 4, 5, 7, 9, 11], 
+Chord = chord{adjustments:[natural, natural, natural],
+              degrees:[1, 3, 5],
+              pattern:[0, 2, 4, 5, 7, 9, 11],
               root:note{accidental:natural, name:c, octave:4}},
-Notes = [note{accidental:natural, name:c, octave:4}, 
-         note{accidental:natural, name:e, octave:4}, 
+Notes = [note{accidental:natural, name:c, octave:4},
+         note{accidental:natural, name:e, octave:4},
          note{accidental:natural, name:g, octave:4}] .
 ```
-
 
 ### Chord Progressions
 
@@ -209,27 +208,27 @@ Output (manually formatted for readability):
 Tonic = note{accidental:natural, name:g, octave:4},
 Pattern = [0, 2, 4, 5, 7, 9, 11],
 Chords = [
-   chord{adjustments:[natural, natural, natural], 
-         degrees:[1, 3, 5], 
-         pattern:[0, 2, 4, 5, 7, 9, 11], 
-         root:note{accidental:natural, name:g, 
-         octave:4}}, 
-   chord{adjustments:[natural, natural, natural], 
-         degrees:[1, 3, 5], 
-         pattern:[0, 2, 4, 5, 7, 9|...], 
-         root:note{accidental:natural, name:e, 
-         octave:5}}, 
-   chord{adjustments:[natural, natural, natural], 
-         degrees:[1, 3, 5], 
-         pattern:[0, 2, 4, 5, 7|...], 
-         root:note{accidental:natural, 
-         name:a, 
-         octave:5}}, 
-   chord{adjustments:[natural, natural, natural], 
-         degrees:[1, 3, 5], 
-         pattern:[0, 2, 4, 5|...], 
-         root:note{accidental:natural, 
-         name:d, 
+   chord{adjustments:[natural, natural, natural],
+         degrees:[1, 3, 5],
+         pattern:[0, 2, 4, 5, 7, 9, 11],
+         root:note{accidental:natural, name:g,
+         octave:4}},
+   chord{adjustments:[natural, natural, natural],
+         degrees:[1, 3, 5],
+         pattern:[0, 2, 4, 5, 7, 9|...],
+         root:note{accidental:natural, name:e,
+         octave:5}},
+   chord{adjustments:[natural, natural, natural],
+         degrees:[1, 3, 5],
+         pattern:[0, 2, 4, 5, 7|...],
+         root:note{accidental:natural,
+         name:a,
+         octave:5}},
+   chord{adjustments:[natural, natural, natural],
+         degrees:[1, 3, 5],
+         pattern:[0, 2, 4, 5|...],
+         root:note{accidental:natural,
+         name:d,
          octave:5}}
 ].
 ```
@@ -286,7 +285,7 @@ or it is a second note and it is one of the above intervals away from the first 
 or if it is a new (unique) tone and forms an Angry Man interval with the previous note.
 
 The `angry_man_row/1` predicate is intended to *verify* if a tone row is a valid Angry Man row.
-An experimental implementation `exp_angry_man_row/1` may be much more efficient. 
+An experimental implementation `exp_angry_man_row/1` may be much more efficient.
 
 The predicate `the_angry_man/2` (variables are `ToneRows` and `Length`) is supposed to
 generate all tone rows satisfying the constraints of the composition.
@@ -303,12 +302,12 @@ Let's dive into the numbers.
 The number of permutations without repetition $\_nP\_r$ read as "$`n`$ options pick $`r`$" is given by the formula:
 
 $$
-\text{Possible permutations} 
-= {\_nP\_r} 
+\text{Possible permutations}
+= {\_nP\_r}
 = \frac{n!}{(n-r)!}
 $$
 
-In our case, there are 45 notes on the Martin DC-45. 
+In our case, there are 45 notes on the Martin DC-45.
 Each tone row has 12 tones.
 So, the number of possible 12-tone rows on the guitar is given by
 
@@ -324,7 +323,7 @@ Let's work backwards to the definition of a permutation in order to more
 Given a set of notes $E$ already in the tone row,
       let the set $N$ represent the possible next notes.
 
-An upper bound for the number of options $|N|$ 
+An upper bound for the number of options $|N|$
       is given by the number of remaining available tones.
 Since each tone is only used once,
       at each decision point there are at most $45 - |E|$ choices remaining.
@@ -332,7 +331,7 @@ Since each tone is only used once,
 Following this logic we can re-write the permutations formula as
 
 $$
-{\_nP\_r} = 
+{\_nP\_r} =
 \prod
       \_{i = 0}^{r - 1}
       (n - i)
@@ -341,7 +340,7 @@ $$
 In our case, it yields the same result:
 
 $$
-{\_{45}P\_{12}} 
+{\_{45}P\_{12}}
 = \prod
       \_{i = 0}^{11}
       (45 - i)
@@ -358,16 +357,16 @@ Let's estimate this as the number of notes already in the row,
       fall one of the accepted intervals away from a given note.
 
 From any given note, there are 5 options up and 5 options down.
-      For each option (which is a tone), 
+      For each option (which is a tone),
       there are about $45/12 = 3.75$ octaves in which it could fall,
-      meaning each note really has about 
+      meaning each note really has about
       $(5 + 5) * 3.75 \approx 37$ valid options for a next note.
 So, the probability of a given note being a valid interval away from another
       note is about $37/45 \approx 82.2\%$.
 
-Assuming an even distribution of tones in the guitar's range, 
-      the number of choices $|N|$ at each stage 
-      (given the existing row $E$) 
+Assuming an even distribution of tones in the guitar's range,
+      the number of choices $|N|$ at each stage
+      (given the existing row $E$)
       is now estimated by the following equation:
 
 $$
@@ -383,7 +382,7 @@ $$
 $$
 
 In the case of our tone rows, $|E|$ is given by the iteration variable
-      $i$ at each step. 
+      $i$ at each step.
 
 Simplifying yields the following estimate for the total number
       of possible Angry Man tone rows:
@@ -405,7 +404,7 @@ $$
 This gives us about 415 trillion (or 415 million million) possible Angry Man tone rows.
 
 That number is still based on a big hidden assumption:
-      the probability of picking a valid (right interval away) note 
+      the probability of picking a valid (right interval away) note
       out of the possible options remains constant as the tone row
       grows.
 In other words, it's possible that as we pick more notes,
@@ -418,14 +417,14 @@ Users can repeatedly call `angry_man_next_note/2` to build an Angry Man tone row
 incrementally, choosing each note from a list of possible options.
 
 As the tone row grows, the number of options grows and shrinks non-linearly.
-This matches the expectation above-- each note will have its own size of 
+This matches the expectation above-- each note will have its own size of
 future possibility space, probably not linearly related to the already chosen notes.
 
-Prolog interactive session log (extracted section): 
+Prolog interactive session log (extracted section):
 
 ```prolog
 ?- angry_man_next_note([
-      note{name: e, accidental: natural, octave: 2}, 
+      note{name: e, accidental: natural, octave: 2},
       note{name: f, accidental: natural, octave: 3}
 ], Note).
 Note = note{accidental:sharp, name:f, octave:2} ;
@@ -446,8 +445,8 @@ Note = note{accidental:natural, name:b, octave:6} ;
 false.
 
 ?- angry_man_next_note([
-      note{name: e, accidental: natural, octave: 2}, 
-      note{name: f, accidental: natural, octave: 3}, 
+      note{name: e, accidental: natural, octave: 2},
+      note{name: f, accidental: natural, octave: 3},
       note{accidental:sharp, name:f, octave:4}
 ], Note).
 Note = note{accidental:natural, name:g, octave:2} ;
@@ -465,9 +464,9 @@ Note = note{accidental:natural, name:c, octave:6} ;
 false.
 
 ?- angry_man_next_note([
-      note{name: e, accidental: natural, octave: 2}, 
-      note{name: f, accidental: natural, octave: 3}, 
-      note{accidental:sharp, name:f, octave:4}, 
+      note{name: e, accidental: natural, octave: 2},
+      note{name: f, accidental: natural, octave: 3},
+      note{accidental:sharp, name:f, octave:4},
       note{accidental:sharp, name:g, octave:3}
 ], Note).
 Note = note{accidental:natural, name:g, octave:2} ;
