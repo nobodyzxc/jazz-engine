@@ -333,6 +333,9 @@ nine_sus4_chord(Root, Chord) :-
 % TODO: meta programming to generate chord constructors,
 % TODO: use minor_third and major_third to define chords
 % TODO: use midi as absolute note
+% TODO: add mode scale (Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, Locrian) and mode scale for minor...
+% TODO: add progression analysis, like secondary dominant, tritone substitution, ...
+%       https://www.thejazzpianosite.com/jazz-piano-lessons/jazz-chord-progressions/how-to-analyse-a-chord-progression-harmonic-analysis/
 
 adjusted_note(Note, natural, AdjustedNote) :- AdjustedNote = Note.
 adjusted_note(Note, sharp, AdjustedNote) :- sharp(Note, AdjustedNote).
