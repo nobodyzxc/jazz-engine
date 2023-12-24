@@ -3,15 +3,34 @@
 
 % Basics
 
-:- record note(name:atom, accidental:atom=natural, octave:integer=4).
+% https://www.inspiredacoustics.com/en/MIDI_note_numbers_and_center_frequencies
+% 0 - 127
+% 127 = G9
+% 60 = C4
+% 21 = A0
+% ---> C0 = 12
+% midi_to_note(MidiNumber, Note) :-
+% note_to_midi(Note, MidiNumber) :-
+
+% for library(record): https://www.swi-prolog.org/pldoc/man?section=record
+:- record note(
+  name:oneof([c,d,e,f,g,a,b])=c,
+  accidental:atom=natural,
+  octave:integer=4).
+
 mk_note(Name, Note) :-
-    Note = note{name: Name, accidental: natural, octave: 4}.
+  make_note([name(Name)], Note).
 mk_note(Name, Accidental, Note) :-
-    Note = note{name: Name, accidental: Accidental, octave: 4}.
+  make_note([name(Name), accidental(Accidental)], Note).
 mk_note(Name, Accidental, Octave, Note) :-
-    Note = note{name: Name, accidental: Accidental, octave: Octave}.
+  make_note([name(Name), accidental(Accidental), octave(Octave)], Note).
+
+% TODO: make predicate like c_sharp by meta programming
 
 pretty_print([]).
+pretty_print(Chord) :-
+  chord_notes(Chord, Notes),
+  pretty_print(Notes).
 pretty_print([Note|Tail]) :-
     Note = note{name: Name, accidental: Accidental, octave: Octave},
     write(Name), write('_'),
@@ -21,6 +40,7 @@ pretty_print([Note|Tail]) :-
     pretty_print(Tail),
     true.
 
+% TODO: refine sharp
 sharp(note{name: a, accidental: flat, octave: OctaveDown}, note{name: a, accidental: natural, octave: Octave}) :-
     OctaveDown is Octave-1.
 sharp(note{name: a, accidental: natural, octave: Octave}, note{name: a, accidental: sharp, octave: Octave}).
@@ -206,7 +226,15 @@ interval_name(12, octave).
 % read as: How many semitones above the tonic is each scale degree? (Indexed by 1)
     % scale degrees: 1  2  3  4  5  6   7
 major_scale_pattern([0, 2, 4, 5, 7, 9, 11]).
+ionian_scle_pattern([0, 2, 4, 5, 7, 9, 11]).
+dorian_scle_pattern([0, 2, 3, 5, 7, 9, 10]).
+phrygian_scle_pattern([0, 1, 3, 5, 7, 8, 10]).
+lydian_scle_pattern([0, 2, 4, 6, 7, 9, 11]).
+mixolydian_scle_pattern([0, 2, 4, 5, 7, 9, 10]).
+
 minor_scale_pattern([0, 2, 3, 5, 7, 8, 10]).
+aeolian_scle_pattern([0, 2, 3, 5, 7, 8, 10]).
+locrian_scle_pattern([0, 1 3, 5, 6, 8, 10]).
 
 scale_degree(Tonic, Pattern, Degree, Note) :-
     nth1(Degree, Pattern, Interval),
@@ -364,7 +392,26 @@ chord_progression(Tonic, Pattern, Degrees, Chords) :-
     ), Degrees, Chords).
 
 
+% tritone_subsititution(Chord, Subsititued) :-
+  % dominant_7_chord
+  % is_seventh_chord(Chord),
+  % note{name: Name, accidental: natural, octave: 4}
+
+% TODO: upper structur on chord transformation
+
+% transformation between 7 and diminished_7
+% X7b9 = (x+1) dim7
+%             ||
+% (X+3)7 = (X+4) dim7
+% (X+6)7 = (X+7) dim7
+% (X+9)7 = (X+10) dim7
+
+
+
+
 % % Guitar
+
+% TODO: add shell voicing and slash/inversion, drop2 chord
 
 % voicing([], _, [], []).
 % voicing([_|Tuning], Frets, Quality, Voicing) :-
