@@ -32,7 +32,7 @@ pretty_print(Chord) :-
   chord_notes(Chord, Notes),
   pretty_print(Notes).
 pretty_print([Note|Tail]) :-
-    Note = note{name: Name, accidental: Accidental, octave: Octave},
+    make_note(Name, Accidental, Octave, Note),
     write(Name), write('_'),
     write(Accidental), write('_'),
     write(Octave),
@@ -64,14 +64,14 @@ sharp(note{name: g, accidental: sharp, octave: Octave}, note{name: a, accidental
 flat(X, Y) :- sharp(Y, X).
 
 enharmonic(X, Y) :-
-    X = note{name: Name, accidental: Accidental, octave: Octave},
-    Y = note{name: Name, accidental: Accidental, octave: Octave}.
+  make_note(Name, Accidental, Octave, X),
+  make_note(Name, Accidental, Octave, Y).
 
 % Octave rollover (down)
 enharmonic(X, Y) :-
-    X = note{name: a, accidental: flat, octave: Octave},
-    OctaveMinusOne is Octave-1,
-    Y = note{name: g, accidental: sharp, octave: OctaveMinusOne}.
+  make_note(a, flat, Octave, X),
+  OctaveMinusOne is Octave-1,
+  make_note(g, sharp, OctaveMinusOne, Y).
 
 % Same octave
 enharmonic(X, Y) :-
@@ -275,15 +275,27 @@ minor_scale(Tonic, Notes) :-
 % Ex a major pattern with a degree of 3 will be a major third.
 % To get a minor chord, either change to a minor pattern (with natural adjustments),
 % or change the adjustment of the third to flat (keeping the major pattern).
-:- record chord(root:note, pattern:list, degrees:list, adjustments:list).
+:- record chord(
+  root:note = note(c, natural, 4),
+  pattern:list = [0, 2, 4, 5, 7, 9, 11],
+  degrees:list = [1, 3, 5],
+  adjustments:list = [natural, natural, natural]).
+
+chord_of(Chord, Root, ScalePattern, Degrees, Adjustments) :-
+  call(ScalePattern, Pattern),
+  make_chord(
+    [root(Root), pattern(Pattern), degrees(Degrees),
+     adjustments(Adjustments)], Chord).
 
 major_chord(Root, Chord) :-
-    major_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5], adjustments: [natural, natural, natural]}.
+  chord_of(Chord, Root,
+    major_scale_pattern, [1, 3, 5],
+    [natural, natural, natural]).
 
 minor_chord(Root, Chord) :-
-    minor_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5], adjustments: [natural, natural, natural]}.
+  chord_of(Chord, Root,
+    minor_scale_pattern, [1, 3, 5],
+    [natural, natural, natural]).
 
 % Equivalent to:
 % minor_chord(Root, Chord) :-                                  |-------- flat 3 = minor ------|
@@ -293,70 +305,89 @@ minor_chord(Root, Chord) :-
 % The adjustment pattern here is natural, natural, flat-- even though diminished chords have a flat 3.
 % This is because the pattern is minor and the 3rd is already flat, so the adjustment is natural.
 diminished_chord(Root, Chord) :-
-    minor_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5], adjustments: [natural, natural, flat]}.
+  chord_of(Chord, Root,
+    minor_scale_pattern, [1, 3, 5],
+    [natural, natural, flat]).
+
 
 augmented_chord(Root, Chord) :-
-    major_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5], adjustments: [natural, natural, sharp]}.
+  chord_of(Chord, Root,
+    major_scale_pattern, [1, 3, 5],
+    [natural, natural, sharp]).
 
 minor_sharp_5_chord(Root, Chord) :-
-    minor_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5], adjustments: [natural, natural, sharp]}.
+  chord_of(Chord, Root,
+    minor_scale_pattern, [1, 3, 5],
+    [natural, natural, sharp]).
 
 major_flat_5_chord(Root, Chord) :-
-    major_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5], adjustments: [natural, natural, flat]}.
+  chord_of(Chord, Root,
+    major_scale_pattern, [1, 3, 5],
+    [natural, natural, flat]).
 
 sus2_chord(Root, Chord) :-
-    major_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 2, 5], adjustments: [natural, natural, natural]}.
+  chord_of(Chord, Root,
+    major_scale_pattern, [1, 2, 5],
+    [natural, natural, natural]).
+
 
 sus4_chord(Root, Chord) :-
-    major_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 4, 5], adjustments: [natural, natural, natural]}.
+  chord_of(Chord, Root,
+    major_scale_pattern, [1, 4, 5],
+    [natural, natural, natural]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %     Seventh Chord     %
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 major_7_chord(Root, Chord) :-
-    major_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5, 7], adjustments: [natural, natural, natural, natural]}.
+  chord_of(Chord, Root,
+    major_scale_pattern, [1, 3, 5, 7],
+    [natural, natural, natural, natural]).
+
+
 
 dominant_7_chord(Root, Chord) :-
-    major_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5, 7], adjustments: [natural, natural, natural, flat]}.
+  chord_of(Chord, Root,
+    major_scale_pattern, [1, 3, 5, 7],
+    [natural, natural, natural, flat]).
 
 minor_major_7_chord(Root, Chord) :-
-    minor_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5, 7], adjustments: [natural, flat, natural, natural]}.
+  chord_of(Chord, Root,
+    minor_scale_pattern, [1, 3, 5, 7],
+    [natural, flat, natural, natural]).
 
 minor_7_chord(Root, Chord) :-
-    minor_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5, 7], adjustments: [natural, flat, natural, flat]}.
+  chord_of(Chord, Root,
+    minor_scale_pattern, [1, 3, 5, 7],
+    [natural, flat, natural, flat]).
 
 major_7_sharp_5_chord(Root, Chord) :-
-    major_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5, 7], adjustments: [natural, natural, sharp, natural]}.
+  chord_of(Chord, Root,
+    major_scale_pattern, [1, 3, 5, 7],
+    [natural, natural, sharp, natural]).
 
 augmented_7_chord(Root, Chord) :-
-    major_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5, 7], adjustments: [natural, natural, sharp, flat]}.
+  chord_of(Chord, Root,
+    major_scale_pattern, [1, 3, 5, 7],
+    [natural, natural, sharp, flat]).
 
 minor_7_flat_5(Root, Chord) :-
-    minor_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5, 7], adjustments: [natural, flat, flat, flat]}.
+  chord_of(Chord, Root,
+    minor_scale_pattern, [1, 3, 5, 7],
+    [natural, flat, flat, flat]).
 
 % FIXME: bb7 instead of 6
 diminished_7_chord(Root, Chord) :-
-    minor_scale_pattern(Pattern),
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 3, 5, 6], adjustments: [natural, flat, flat, natural]}.
+  chord_of(Chord, Root,
+    minor_scale_pattern, [1, 3, 5, 6],
+    [natural, flat, flat, natural]).
 
 nine_sus4_chord(Root, Chord) :-
-    major_scale_pattern(Pattern),
+  chord_of(Chord, Root,
+    major_scale_pattern, [1, 4, 5, 2],
+    [natural, natural, natural, natural]).
     % Have to use 2 because 9 is out of range-- only 7 scale degrees.
-    Chord = chord{root: Root, pattern: Pattern, degrees: [1, 4, 5, 2], adjustments: [natural, natural, natural, natural]}.
 
 % TODO: meta programming to generate chord constructors,
 % TODO: use minor_third and major_third to define chords
@@ -370,7 +401,9 @@ adjusted_note(Note, sharp, AdjustedNote) :- sharp(Note, AdjustedNote).
 adjusted_note(Note, flat, AdjustedNote) :- flat(Note, AdjustedNote).
 
 chord_notes(Chord, Notes) :-
-    Chord = chord{root: Root, pattern: Pattern, degrees: Degrees, adjustments: Adjustments},
+    make_chord(
+    [root(Root), pattern(Pattern), degrees(Degrees),
+     adjustments(Adjustments)], Chord),
     length(Degrees, DegreesLength),
 
     betweenToList(1,DegreesLength,Indices),
@@ -392,10 +425,14 @@ chord_progression(Tonic, Pattern, Degrees, Chords) :-
     ), Degrees, Chords).
 
 
-% tritone_subsititution(Chord, Subsititued) :-
-  % dominant_7_chord
-  % is_seventh_chord(Chord),
-  % note{name: Name, accidental: natural, octave: 4}
+tritone_subsititution(Chord, Subsititued) :-
+  chord_root(Chord, Root),
+  dominant_7_chord(Root, Chord),
+  interval_octave_agnostic(Root, Subsititued, 6).
+  %minor_7_chord(SubRoot, Subsititued).
+
+tritone_subsititution(Chord, Subsititued) :-
+  tritone_subsititution(Subsititued, Chord).
 
 % TODO: upper structur on chord transformation
 
@@ -405,8 +442,6 @@ chord_progression(Tonic, Pattern, Degrees, Chords) :-
 % (X+3)7 = (X+4) dim7
 % (X+6)7 = (X+7) dim7
 % (X+9)7 = (X+10) dim7
-
-
 
 
 % % Guitar
@@ -449,3 +484,10 @@ chord_progression(Tonic, Pattern, Degrees, Chords) :-
 % 4, 3, 4, 5
 % 1, 5, 6, 3
 % 4, 1, 4, 5
+c(N) :- mk_note(c, N).
+d(N) :- mk_note(d, N).
+e(N) :- mk_note(e, N).
+f(N) :- mk_note(f, N).
+g(N) :- mk_note(g, N).
+a(N) :- mk_note(a, N).
+b(N) :- mk_note(b, N).
